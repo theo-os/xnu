@@ -1,0 +1,11 @@
+load("//bazel:toolchain.bzl", "tool_binary")
+
+# The IIG compiler is provided by the `@iig_tools` module extension
+# (//bazel:iig_tools.bzl), which builds the sources at
+# https://github.com/theo-os/iig-tools.  iig is a host tool, so pin it to the
+# Linux build configuration (see `tool_binary`).
+tool_binary(
+    name = "iig",
+    binary = "@iig_tools//:iig",
+    visibility = ["//visibility:public"],
+)

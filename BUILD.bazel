@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_binary")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_binary", "cc_toolchain")
 load("//bazel:rules.bzl", "dummy_header")
 load("//bazel:kernel_config.bzl", "COMMON_KERNEL_FLAGS", "X86_64_FLAGS")
 
@@ -129,6 +129,37 @@ platform(
         "@platforms//cpu:x86_64",
         "@platforms//os:macos",
     ],
+)
+
+# The cc_toolchain lives in the root package on purpose: rules_cc resolves
+# legacy `tool_path` entries relative to the package of the cc_toolchain, and
+# the tool binaries are produced under `bazel-out/...` at the execroot.
+cc_toolchain(
+    name = "xnu_cc_toolchain",
+    all_files = "//bazel:llvm_tool_files",
+    ar_files = "//bazel:llvm_tool_files",
+    compiler_files = "//bazel:llvm_tool_files",
+    dwp_files = "//bazel:empty",
+    linker_files = "//bazel:llvm_tool_files",
+    objcopy_files = "//bazel:llvm_tool_files",
+    strip_files = "//bazel:llvm_tool_files",
+    supports_param_files = 0,
+    toolchain_config = "//bazel:xnu_toolchain_config",
+    toolchain_identifier = "xnu-toolchain",
+)
+
+toolchain(
+    name = "xnu_toolchain",
+    exec_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    target_compatible_with = [
+        "@platforms//os:macos",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":xnu_cc_toolchain",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
 filegroup(

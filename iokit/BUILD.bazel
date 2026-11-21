@@ -13,7 +13,7 @@ genrule(
     srcs = ["DriverKit/OSObject.iig"],
     outs = ["DriverKit/OSObject.h", "DriverKit/OSObject.iig.cpp"],
     tools = ["//tools/iig:iig"],
-    cmd = "$(location //tools/iig:iig) -o $(location DriverKit/OSObject.h) -impl $(location DriverKit/OSObject.iig.cpp) $(location DriverKit/OSObject.iig)",
+    cmd = "$(location //tools/iig:iig) --def $(location DriverKit/OSObject.iig) --header $(location DriverKit/OSObject.h) --impl $(location DriverKit/OSObject.iig.cpp)",
 )
 
 cc_library(

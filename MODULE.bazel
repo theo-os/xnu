@@ -3,17 +3,46 @@ module(
     version = "0.1",
 )
 
-bazel_dep(name = "rules_cc", version = "0.2.18")
-bazel_dep(name = "rules_rust", version = "0.70.0")
+bazel_dep(name = "rules_cc", version = "0.2.25")
 bazel_dep(name = "platforms", version = "1.1.0")
 
-rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
-rust.toolchain(edition = "2024")
-use_repo(rust, "rust_toolchains")
-register_toolchains("@rust_toolchains//:all")
+# Dependencies required by the llvm-project Bazel overlay (see
+# /home/theo/src/llvm-project/utils/bazel/MODULE.bazel).  Keep the aliases in
+# sync with that file so the overlay's BUILD files resolve.
+bazel_dep(name = "apple_support", version = "2.8.4", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "gmp", version = "6.3.0.bcr.4")
+bazel_dep(name = "libpfm", version = "4.13.0", repo_name = "pfm")
+bazel_dep(name = "libxml2", version = "2.15.3")
+bazel_dep(name = "mpc", version = "1.4.1.bcr.3")
+bazel_dep(name = "mpfr", version = "4.2.2.bcr.4")
+bazel_dep(name = "nanobind", version = "2.12.0.bcr.1")
+bazel_dep(name = "protobuf", version = "35.0", repo_name = "com_google_protobuf")
+bazel_dep(name = "rules_python", version = "1.9.2")
+bazel_dep(name = "rules_shell", version = "0.8.0")
+bazel_dep(name = "vulkan_headers", version = "1.4.349")
+bazel_dep(name = "xz", version = "5.4.5.bcr.9", repo_name = "llvm_xz")
+bazel_dep(name = "zlib-ng", version = "2.3.3", repo_name = "llvm_zlib")
+bazel_dep(name = "zstd", version = "1.5.7.bcr.1", repo_name = "llvm_zstd")
 
-register_toolchains("//bazel:xnu_toolchain")
+register_toolchains("//:xnu_toolchain")
 
 bootstrap_cmds = use_extension("//bazel:repositories.bzl", "bootstrap_cmds_extension")
 use_repo(bootstrap_cmds, "com_apple_oss_bootstrap_cmds")
 
+iig_tools = use_extension("//bazel:iig_tools.bzl", "iig_tools")
+use_repo(iig_tools, "iig_tools")
+
+# Bring in the LLVM Bazel overlay from a local llvm-project checkout.  The
+# overlay lives in utils/bazel rather than the repository root, so we first
+# create @llvm-raw and then instantiate the overlay with its repo rule -- the
+# same two step dance utils/bazel/MODULE.bazel uses for its own build.
+llvm_source = use_extension("//bazel:llvm_source.bzl", "llvm_source")
+llvm_source.local(path = "/home/theo/src/llvm-project")
+use_repo(llvm_source, "llvm-raw")
+
+llvm_configure = use_repo_rule("@llvm-raw//utils/bazel:configure.bzl", "llvm_configure")
+llvm_configure(
+    name = "llvm-project",
+    targets = ["X86"],
+)

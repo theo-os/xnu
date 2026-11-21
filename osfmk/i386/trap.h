@@ -118,8 +118,11 @@
 #define ML_TRAP_REGISTER_2      "r10"
 #define ML_TRAP_REGISTER_3      "r11"
 
+/* Use "i"/%c0 rather than "p"/%0 so upstream clang emits
+ * `ud1l 0xbffe(%eax), %eax` instead of `ud1l $0(%eax), %eax`, which the
+ * integrated assembler rejects. */
 #define ml_recoverable_trap(code) \
-	__asm__ volatile ("ud1l %0(%%eax), %%eax" : : "p"(code))
+	__asm__ volatile ("ud1l %c0(%%eax), %%eax" : : "i"(code))
 
 #define ml_fatal_trap(code)  ({ \
 	ml_recoverable_trap(code); \

@@ -1,0 +1,11 @@
+# Optimize @llvm-project while leaving the rest of the build in fastbuild/dbg
+build --per_file_copt=external/.*llvm-project.*@-O2,-DNDEBUG
+build --host_per_file_copt=external/.*llvm-project.*@-O2,-DNDEBUG
+common --repo_env=CC=clang
+common --repo_env=CXX=clang++
+common --linkopt=-fuse-ld=lld
+common --host_linkopt=-fuse-ld=lld
+build --fission=yes
+build --linkopt=-Wl,--gdb-index
+
+
